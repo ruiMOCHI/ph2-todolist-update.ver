@@ -15,7 +15,7 @@ require("../dbconnect.php");
 <body class="bg-gray-100 h-screen flex items-center justify-center">
     <div class="bg-white p-8 rounded shadow-md w-96">
         <h1 class="text-2xl font-bold mb-6">新規会員登録</h1>
-        <form action="login.php" method="post">
+        <form action="register.php" method="post">
             <div class="mb-4">
                 <label for="email" class="block text-sm font-medium text-gray-600">メールアドレス：</label>
                 <input type="text" name="email" id="email" class="mt-1 p-2 w-full border rounded" required>
