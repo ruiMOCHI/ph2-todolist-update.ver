@@ -1,16 +1,20 @@
 <?php
 
-require("../../dbconnect.php");
+ require("../../dbconnect.php");
 
-// 削除フォームが送信されたかどうかを確認
-if (isset($_POST['delete_todo'])) {
-    $todoId = $_POST['todo_id'];
+session_start();
 
-    // 削除ロジックを実装
-    $stmt = $dbh->prepare("DELETE FROM todos WHERE id = ?");
-    $stmt->execute([$todoId]);
-
-    // リダイレクト
-    header("Location: ../../index.php");
-    exit();
+if (!isset($_POST['delete-id'])) {
+    header('HTTP/1.1 400 Bad Request');
+    echo 'Bad Request: delete-id is missing';
+    exit;
 }
+
+try {
+    $stmt = $dbh->prepare("DELETE FROM todos WHERE id = :id");
+    $stmt->bindValue(':id', $_POST['delete-id']);
+    $stmt->execute();
+  } catch (PDOException $e) {
+    header('HTTP/1.1 500 Internal Server Error');
+    exit;
+  }
