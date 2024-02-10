@@ -2,7 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require("dbconnect.php");
+require("./dbconnect.php");
 
 session_start();
 
@@ -44,34 +44,32 @@ $todos->execute();
             </div>
         </div>
     </header>
-    <div class="p-10">
+    <div class="p-8">
         <div class="w-full flex justify-center items-center flex-col">
-            <form action="admin/create/index.php" method="POST">
-                <input class="border mb-5 p-2 w-full max-w-lg" type="text" placeholder="新しいToDoを入力してください" id="new-todo" name="new_todo">
-                <button class="underline bg-slate-400 hover:bg-blue-700 hover:text-gray-300 text-sky-800 font-bold py-2 px-4 rounded w-52 text-center" id="js-create-todo">追加</button>
-            </form>
-            <ul class="sp-y-4" id="js-todo-list">
-                <?php foreach ($todos as $todo) : ?>
-                    <li class="flex items-center js-todo" data-id="<?= $todo['id'] ?>">
-                        <?= $todo['text'] ?>
-                        <!-- ボタンを横に並べる -->
-                        <div class="flex ml-4">
-                            <form action="admin/update/index.php" method="POST">
-                                <input type="hidden" name="todo_id" value="<?php echo $todo['id']; ?>">
-                                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mx-2 my-4" name="update_todo">
+            <div class="mb-5 text-center">
+                <input class="border mb-5 p-2 w-full max-w-lg" type="text" placeholder="新しいToDoを入力してください" id="js-todo-text" name="new_todo">
+                <button type="button" class="underline bg-slate-400 hover:bg-blue-700 hover:text-gray-300 text-sky-800 font-bold py-2 px-4 rounded w-52 text-center" id="js-create-todo">
+                    追加
+                </button>
+            </div>
+                <ul class="sp-y-4 text-center" id="js-todo-list">
+                    <?php foreach ($todos as $todo) : ?>
+                        <li class="flex items-center justify-center js-todo" data-id="<?= $todo['id'] ?>">
+                            <span><?= $todo['text'] ?></span>
+                                <button type="button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mx-2 my-4 js-complete-todo" name="toggle-id" data-id="<?= $todo['id']; ?>"> <!--このdata-idをまず検索-->
                                     <?php echo $todo['completed'] ? 'Undo' : 'Complete'; ?>
                                 </button>
-                            </form>
-                            <a href="admin/edit/index.php?id=<?php echo $todo['id']; ?>&text=<?php echo urldecode($todo['text']); ?>" class="bg-yellow-500 hover:bg-yellow-700 text-white py-1 px-2 font-bold rounded mx-2 my-4" id="yellow-button">Edit</a>
-                            <button type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded mx-2 my-4 js-delete-todo" data-id="<?php echo $todo['id']; ?>">Delete</button>
-                        </div>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
+                                <a href="admin/edit/index.php?id=<?= $todo['id']; ?>&text=<?= $todo['text'] ?>" class="bg-yellow-500 hover:bg-yellow-700 text-white py-1 px-2 font-bold rounded mx-2 my-4" id="yellow-button">Edit</a>
+                                <button type="button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded mx-2 my-4 js-delete-todo" data-id="<?= $todo['id']; ?>">
+                                Delete
+                                </button>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
     </div>
     <template id="js-template">
-        <li id="js-todo-template" class="flex items-center js-todo">
+        <li id="js-todo-template" class="flex items-center justify-center js-todo">
             <span id="js-todo-text"></span>
             <button type="button" id="js-complete-todo-template" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mx-2 my-4 js-complete-todo" data-id="">
                 Complete
@@ -82,6 +80,33 @@ $todos->execute();
             </button>
         </li>
     </template>
+    <script>
+        const addTodoElement = (text, id) => {
+            const template = document.getElementById('js-template').content.cloneNode(true);
+            template.getElementById('js-todo-text').textContent = text; //cloneNode() 関数を使って <template> 内のコンテンツをクローンし、新たな To-Do 要素の基礎部分を生成
+
+            const todoElement = template.getElementById("js-todo-template");
+            todoElement.setAttribute("data-id", id); //<li> 要素を取得し、data-id 属性に id を設定する（スタータス更新の処理で使います）
+
+            const completeButton = template.getElementById('js-complete-todo-template');
+            completeButton.setAttribute("data-id", id);
+            completeButton.addEventListener('click', () => {
+                updateTodo(id);
+            }); //ステータス更新ボタンの要素を取得し、data-id 属性に id や イベントリスナーを設定する
+
+            template.getElementById('js-edit-todo-template').href = `admin/edit/index.php?id=${id}&text=${text}`;
+            //引数を用いて To-Do のテキストと編集用のリンクを設定する
+
+            const deleteButton = template.getElementById('js-delete-todo-template');
+            deleteButton.setAttribute('data-id', id);
+            deleteButton.addEventListener('click', () => {
+                deleteTodo(id, deleteButton.parentNode);
+            }); //削除ボタンの要素を取得し、data-id 属性に id や イベントリスナーを設定する
+
+            document.getElementById('js-todo-list').appendChild(template);
+            //appendChild() 関数を使って新しい To-Do を元のリストに追加する
+        }
+    </script>
 </body>
 
 </html>

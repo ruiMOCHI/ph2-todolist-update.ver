@@ -1,3 +1,4 @@
+// 追加処理、更新処理、削除処理を addEventListener で指定
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('js-create-todo').addEventListener('click', createTodo);
 
@@ -18,39 +19,16 @@ const completeButtons = document.querySelectorAll(".js-complete-todo");
 const deleteButtons = document.querySelectorAll(".js-delete-todo");
 deleteButtons.forEach((button) => {
   button.addEventListener('click',  () => {
-    const todoId = button.parentNode.getAttribute('data-id');
+    const todoId = button.parentNode.getAttribute('data-id'); //parentNodeは指定する親要素が正しいか注意
     const parentNode = button.parentNode;
     deleteTodo(todoId, parentNode);
   });
 });
 
-const addTodoElement = (text, id) => {
-    const template = document.getElementById('js-template').content.cloneNode(true);
-    template.getElementById('js-todo-text').textContent = text;        //cloneNode() 関数を使って <template> 内のコンテンツをクローンし、新たな To-Do 要素の基礎部分を生成
-
-    const todoElement = template.getElementById("js-todo-template");
-    todoElement.setAttribute("data-id", id);         //<li> 要素を取得し、data-id 属性に id を設定する（スタータス更新の処理で使います）
-
-    const completeButton = template.getElementById('js-complete-todo-template');
-    completeButton.setAttribute("data-id", id);
-    completeButton.addEventListener('click', () => {
-        updateTodo(id);
-    });       //ステータス更新ボタンの要素を取得し、data-id 属性に id や イベントリスナーを設定する
-
-    template.getElementById('js-edit-todo-template').href = `admin/edit/index.php?id=${id}&text=${text}`;
-    //引数を用いて To-Do のテキストと編集用のリンクを設定する
-
-    const deleteButton = template.getElementById('js-delete-todo-template');
-    deleteButton.setAttribute('data-id', id);
-    deleteButton.addEventListener('click', () => {
-        deleteTodo(id, deleteButton.parentNode);
-    });        //削除ボタンの要素を取得し、data-id 属性に id や イベントリスナーを設定する
-
-    document.getElementById('js-todo-list').appendChild(template);
-    //appendChild() 関数を使って新しい To-Do を元のリストに追加する
-}
 });
 
+
+//追加処理
 async function createTodo() {
     const todoInput = document.getElementById('js-todo-text'); /*別のが入るかも？*/
     const todoText = todoInput.value;
@@ -76,6 +54,39 @@ async function createTodo() {
     } catch (error) {
         alert('Error: ' + error.message);
     }
+}
+
+const updateTodoElement = (id, isCompleted) => {
+  const todoElement = document.querySelector(`.js-todo[data-id="${id}"]`);
+
+  if (todoElement) {
+    const completeButton = todoElement.querySelector('.js-complete-todo');
+    completeButton.textContent = isCompleted ? 'Undo' : 'Complete';
+  }
+}
+
+//ステータス更新処理
+async function updateTodo(id) {
+  try {
+    const response = await fetch("../admin/update/index.php", {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `toggle-id=${id}`
+    })
+
+    if(!response.ok) {
+      const errorText = await response.text();
+      throw new Error('Error from server: ' + errorText);
+    }
+
+    const data = await response.json();
+    updateTodoElement(id, data.completed);
+
+  } catch (error) {
+    alert('Error: ' + error.message);
+  }
 }
 
 // 削除処理
