@@ -56,6 +56,32 @@ async function createTodo() {
     }
 }
 
+const addTodoElement = (text, id) => {
+  const template = document.getElementById('js-template').content.cloneNode(true);
+  template.getElementById('js-todo-text').textContent = text; /*cloneNode() 関数を使って <template> 内のコンテンツをクローンし、新たな To-Do 要素の基礎部分を生成*/
+
+  const todoElement = template.getElementById("js-todo-template");
+  todoElement.setAttribute("data-id", id); //<li> 要素を取得し、data-id 属性に id を設定する（スタータス更新の処理で使います）
+
+  const completeButton = template.getElementById('js-complete-todo-template');
+  completeButton.setAttribute("data-id", id);
+  completeButton.addEventListener('click', () => {
+      updateTodo(id);
+  }); //ステータス更新ボタンの要素を取得し、data-id 属性に id や イベントリスナーを設定する
+
+  template.getElementById('js-edit-todo-template').href = `admin/edit/index.php?id=${id}&text=${text}`;
+  //引数を用いて To-Do のテキストと編集用のリンクを設定する
+
+  const deleteButton = template.getElementById('js-delete-todo-template');
+  deleteButton.setAttribute('data-id', id);
+  deleteButton.addEventListener('click', () => {
+      deleteTodo(id, deleteButton.parentNode);
+  }); //削除ボタンの要素を取得し、data-id 属性に id や イベントリスナーを設定する
+
+  document.getElementById('js-todo-list').appendChild(template);
+  //appendChild() 関数を使って新しい To-Do を元のリストに追加する
+}
+
 const updateTodoElement = (id, isCompleted) => {
   const todoElement = document.querySelector(`.js-todo[data-id="${id}"]`);
 
