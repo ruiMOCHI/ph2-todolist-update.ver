@@ -5,9 +5,10 @@ USE posse;  /*作成したデータベースを選択*/
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    email VARCHAR(255),
-    password VARCHAR(255)
+    email VARCHAR(255) UNIQUE ,
+    password VARCHAR(255) UNIQUE
 ) CHARSET=utf8;
+/*一意制約(UNIQUE)を持つ列に重複する値が挿入されようとすると、MySQLはエラーを返します。主キーには書かなくていい@*/
 
 INSERT INTO users (email, password) VALUES
 ('admin@example.com', '$2y$10$aM4/AnwPCu4Jdm07v8fChOTqySH.ObzN2IyyVC0w.PeKLO1AGUp6K');
